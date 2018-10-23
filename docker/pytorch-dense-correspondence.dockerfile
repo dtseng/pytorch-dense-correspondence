@@ -1,4 +1,6 @@
-FROM nvidia/cuda:8.0-devel-ubuntu16.04
+FROM nvidia/opengl:1.0-glvnd-runtime-ubuntu16.04
+
+ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES},display
 
 ARG USER_NAME
 ARG USER_PASSWORD
@@ -10,6 +12,11 @@ RUN apt install sudo
 RUN useradd -ms /bin/bash $USER_NAME
 RUN usermod -aG sudo $USER_NAME
 RUN yes $USER_PASSWORD | passwd $USER_NAME
+
+# install opengl stuff
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        mesa-utils && \
+    rm -rf /var/lib/apt/lists/*
 
 # set uid and gid to match those outside the container
 RUN usermod -u $USER_ID $USER_NAME 

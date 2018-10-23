@@ -9,3 +9,7 @@ paladin-23:
 iiwa-2:
   manuelli:
     path_to_data_directory: '/home/manuelli/data'
+
+triton1:
+  mmatl:
+    path_to_data_directory: '/home/mmatl/Documents/code/registration/pytorch-dense-correspondence'
