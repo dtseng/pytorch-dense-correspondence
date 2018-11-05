@@ -1,15 +1,15 @@
-peteflo-i7gtx:
-  peteflo:
-    path_to_data_directory: '/media/peteflo/3TBbackup/dense_correspondence'
+autolab-titan-box:
+  root:
+    path_to_data_directory: '/nfs/diskstation/davidtseng/densenet'
 
-paladin-23:
-  manuelli:
-    path_to_data_directory: '/home/manuelli/data'
+  davidtseng:
+    path_to_data_directory: '/nfs/diskstation/davidtseng/densenet'
 
-iiwa-2:
-  manuelli:
-    path_to_data_directory: '/home/manuelli/data'
 
 triton1:
-  mmatl:
-    path_to_data_directory: '/home/mmatl/Documents/code/registration/pytorch-dense-correspondence'
+   root:
+     path_to_data_directory: '/nfs/diskstation/davidtseng/densenet'
+ 
+   davidtseng:
+     path_to_data_directory: '/nfs/diskstation/davidtseng/densenet'
+ 

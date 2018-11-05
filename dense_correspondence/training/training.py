@@ -305,6 +305,7 @@ class DenseCorrespondenceTraining(object):
 
 
                 data_type = metadata["type"][0]
+
                 
                 img_a = Variable(img_a.cuda(), requires_grad=False)
                 img_b = Variable(img_b.cuda(), requires_grad=False)

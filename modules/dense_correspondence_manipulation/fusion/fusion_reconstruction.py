@@ -291,7 +291,7 @@ class TSDFReconstruction(FusionReconstruction):
     def load_poly_data(self):
         self.poly_data_raw = ioUtils.readPolyData(self.reconstruction_filename)
         self.poly_data = self.poly_data_raw
-        self.crop_poly_data()
+        # self.crop_poly_data()
 
     @property
     def fusion_pose_data(self):
