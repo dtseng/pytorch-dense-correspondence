@@ -358,12 +358,12 @@ class DenseCorrespondenceTraining(object):
 
                     ## WARNING: visdom is unstable and has changed its API
                     ## current hack is to just not use visdom plotting
-                    return
+                    # return
                     ## </end hack>
 
                     learning_rate = DenseCorrespondenceTraining.get_learning_rate(optimizer)
                     self._logging_dict['train']['learning_rate'].append(learning_rate)
-                    self._visdom_plots['learning_rate'].log(loss_current_iteration, learning_rate)
+                    # self._visdom_plots['learning_rate'].log(loss_current_iteration, learning_rate)
                     self._tensorboard_logger.log_value("learning rate", learning_rate, loss_current_iteration)
 
 
@@ -371,19 +371,19 @@ class DenseCorrespondenceTraining(object):
                     # is a zero loss
                     if not loss_composer.is_zero_loss(match_loss):
                         self._logging_dict['train']['match_loss'].append(match_loss.data[0])
-                        self._visdom_plots['train']['match_loss'].log(loss_current_iteration, match_loss.data[0])
+                        # self._visdom_plots['train']['match_loss'].log(loss_current_iteration, match_loss.data[0])
                         self._tensorboard_logger.log_value("train match loss", match_loss.data[0], loss_current_iteration)
 
                     if not loss_composer.is_zero_loss(masked_non_match_loss):
                         self._logging_dict['train']['masked_non_match_loss'].append(masked_non_match_loss.data[0])
-                        self._visdom_plots['train']['masked_non_match_loss'].log(loss_current_iteration,
-                                                             masked_non_match_loss.data[0])
+                        # self._visdom_plots['train']['masked_non_match_loss'].log(loss_current_iteration,
+                        #                                      masked_non_match_loss.data[0])
                         self._tensorboard_logger.log_value("train masked non match loss", masked_non_match_loss.data[0], loss_current_iteration)
 
                     if not loss_composer.is_zero_loss(background_non_match_loss):
                         self._logging_dict['train']['background_non_match_loss'].append(background_non_match_loss.data[0])
-                        self._visdom_plots['train']['background_non_match_loss'].log(loss_current_iteration,
-                                                             background_non_match_loss.data[0])
+                        # self._visdom_plots['train']['background_non_match_loss'].log(loss_current_iteration,
+                        #                                      background_non_match_loss.data[0])
                         self._tensorboard_logger.log_value("train background non match loss", background_non_match_loss.data[0], loss_current_iteration)
 
                     if not loss_composer.is_zero_loss(blind_non_match_loss):
