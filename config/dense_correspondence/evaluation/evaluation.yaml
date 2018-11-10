@@ -4,14 +4,14 @@ params:
 
 networks:
   caterpillar_3:
-    path_to_network_params: code/data_volume/pdc/trained_models/tutorials/caterpillar_3/003500.pth
-  simulated_3:
-    path_to_network_params: code/data_volume/pdc/trained_models/tutorials/simulated_3/003500.pth
-  testTest_3:
-    path_to_network_params: code/data_volume/pdc/trained_models/tutorials/testTest_3/000000.pth
+    path_to_network_params:/home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/tutorials/caterpillar_3/003500.pth
+  shark_3:
+    path_to_network_params:/home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/shark_3/003500.pth
+  shark_depth_3:
+    path_to_network_params:/home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/shark_depth_3/005000.pth
 
 
 
 dataset: [] # which dataset to use, not used for now
 
-output_dir: code/data_volume/pdc/analysis
+output_dir:/home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/analysis

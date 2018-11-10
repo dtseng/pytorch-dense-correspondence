@@ -43,7 +43,7 @@ class SpartanDataset(DenseCorrespondenceDataset):
         :param config: This is for creating a dataset from a composite dataset config file.
             This is of the form:
 
-                logs_root_path: code/data_volume/pdc/logs_proto
+                logs_root_path: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/logs_proto
 
                 single_object_scenes_config_files:
                 - caterpillar_17_scenes.yaml

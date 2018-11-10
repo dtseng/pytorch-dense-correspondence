@@ -1,4 +1,4 @@
-export DC_SOURCE_DIR=~/code
+export DC_SOURCE_DIR=~/pytorch-dense-correspondence
 
 export PYTHONPATH=$PYTHONPATH:$DC_SOURCE_DIR/modules
 export PYTHONPATH=$PYTHONPATH:$DC_SOURCE_DIR

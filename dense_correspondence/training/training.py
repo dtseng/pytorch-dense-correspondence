@@ -285,7 +285,7 @@ class DenseCorrespondenceTraining(object):
         if not use_pretrained:
             self.save_network(dcn, optimizer, 0)
 
-        for epoch in range(50):  # loop over the dataset multiple times
+        for epoch in range(500):  # loop over the dataset multiple times
 
             for i, data in enumerate(self._data_loader, 0):
                 loss_current_iteration += 1
