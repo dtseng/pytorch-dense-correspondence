@@ -1,0 +1,6 @@
+logs_root_path: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/logs_proto
+object_id: "blackshoes"
+train:
+- "blackshoes"
+test:
+- "blackshoes_test"

@@ -1,0 +1,10 @@
+logs_root_path: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/logs_proto
+
+single_object_scenes_config_files:
+- simulated_bottle_sauce.yaml
+- simulated_cat.yaml
+- simulated_cup.yaml
+- simulated_elephant.yaml
+- simulated_pear.yaml
+
+multi_object_scenes_config_files: []
