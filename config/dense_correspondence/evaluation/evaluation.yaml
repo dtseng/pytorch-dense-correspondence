@@ -4,14 +4,22 @@ params:
 
 networks:
   caterpillar_3:
-    path_to_network_params:/home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/tutorials/caterpillar_3/003500.pth
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/tutorials/caterpillar_3/003500.pth
   shark_3:
-    path_to_network_params:/home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/shark_3/003500.pth
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/shark_3/003500.pth
   shark_depth_3:
-    path_to_network_params:/home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/shark_depth_3/005000.pth
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/shark_depth_3/005000.pth
+  cup_bottlesauce_elephant_cat_pear_3:
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/cup_bottlesauce_elephant_cat_pear_3/162500.pth
+  elephant_cup_3:
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/elephant_cup_3/007000.pth
+  caterpillar_baymax_starbot_all_front_single_only_3: # might need to train for longer
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/tutorials/caterpillar_baymax_starbot_all_front_single_only_3/003500.pth
+  elephant_3:
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/elephant_3/003500.pth
 
 
 
 dataset: [] # which dataset to use, not used for now
 
-output_dir:/home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/analysis
+output_dir: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/analysis

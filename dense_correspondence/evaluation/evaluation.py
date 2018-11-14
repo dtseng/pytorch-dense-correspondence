@@ -125,7 +125,6 @@ class DenseCorrespondenceEvaluation(object):
         if name not in self._config["networks"]:
             raise ValueError("Network %s is not in config file" %(name))
 
-
         path_to_network_params = self._config["networks"][name]["path_to_network_params"]
         path_to_network_params = utils.convert_to_absolute_path(path_to_network_params)
         model_folder = os.path.dirname(path_to_network_params)

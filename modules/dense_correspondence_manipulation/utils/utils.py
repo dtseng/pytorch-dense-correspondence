@@ -237,6 +237,7 @@ def get_model_param_file_from_directory(model_folder, iteration=None):
         files = os.listdir(model_folder)
         model_param_file = sorted(fnmatch.filter(files, '*.pth'))[-1]
         iteration = int(model_param_file.split(".")[0])
+
         optim_param_file = sorted(fnmatch.filter(files, '*.pth.opt'))[-1]
     else:
         prefix = getPaddedString(iteration, width=6)

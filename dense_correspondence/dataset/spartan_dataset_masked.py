@@ -161,7 +161,6 @@ class SpartanDataset(DenseCorrespondenceDataset):
         """
 
         self.logs_root_path = utils.convert_to_absolute_path(config['logs_root_path'])
-
         self._single_object_scene_dict = dict()
 
         prefix = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence',
@@ -257,6 +256,9 @@ class SpartanDataset(DenseCorrespondenceDataset):
         :return:
         :rtype:
         """
+        if "code" in self.logs_root_path:
+            self.logs_root_path = self.logs_root_path.replace('/code', '/pytorch-dense-correspondence')
+
         return os.path.join(self.logs_root_path, scene_name, 'processed')
 
 
