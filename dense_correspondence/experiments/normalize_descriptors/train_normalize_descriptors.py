@@ -40,3 +40,7 @@ train_config["training"]["logging_dir_name"] = name
 train_config["training"]["logging_dir"] = logging_dir
 train_config["dense_correspondence_network"]["descriptor_dimension"] = d
 train_config["training"]["num_iterations"] = num_iterations
+
+train = DenseCorrespondenceTraining(dataset=dataset, config=train_config)
+train.run()
+
