@@ -24,7 +24,7 @@ class DenseCorrespondenceNetwork(nn.Module):
     IMAGE_TO_TENSOR = valid_transform = transforms.Compose([transforms.ToTensor(), ])
 
     def __init__(self, fcn, descriptor_dimension, image_width=640,
-                 image_height=480, normalize=False):
+                 image_height=480, normalize=False, depth_invariant = False):
         """
 
         :param fcn:
@@ -56,6 +56,7 @@ class DenseCorrespondenceNetwork(nn.Module):
 
         self._descriptor_image_stats = None
         self._normalize = normalize
+        self._depth_invariant = depth_invariant
 
 
     @property
@@ -211,13 +212,17 @@ class DenseCorrespondenceNetwork(nn.Module):
         :rtype:
         """
 
+        if self._depth_invariant:
+            N, D, H, W = list(img_tensor.size())
+            img_tensor_flattened = img_tensor.view([N, D, -1])
+            mean = torch.mean(img_tensor_flattened, dim=2, keepdim=True).repeat(1, 1, H*W)
+            img_tensor = (img_tensor_flattened - mean).view([N, D, H, W])
+
         res = self.fcn(img_tensor)
         if self._normalize:
             print "normalizing descriptor norm"
             norm = torch.norm(res, 2, 1) # [N,1,H,W]
             res = res/norm
-
-
 
         return res
 
@@ -327,14 +332,21 @@ class DenseCorrespondenceNetwork(nn.Module):
 
 
         if 'normalize' in config:
+            assert config['normalize'] == True
             normalize = config['normalize']
         else:
             normalize = False
 
+        if 'depth_invariant' in config and config['depth_invariant'] == True:
+            depth_invariant = config['depth_invariant']
+        else:
+            depth_invariant = False
+
         dcn = DenseCorrespondenceNetwork(fcn, config['descriptor_dimension'],
                                           image_width=config['image_width'],
                                           image_height=config['image_height'],
-                                         normalize=normalize)
+                                         normalize=normalize,
+                                         depth_invariant=depth_invariant)
 
         if load_stored_params:
             assert model_param_file is not None
@@ -452,4 +464,3 @@ class DenseCorrespondenceNetwork(nn.Module):
         # cast to float32, need this in order to use cv2.BFMatcher() with bf.knnMatch
         des = np.array(des, dtype=np.float32)
         return des
-
