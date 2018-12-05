@@ -1,0 +1,6 @@
+logs_root_path: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/logs_proto
+object_id: "pear"
+train:
+- "pear_rgb"
+test:
+- "pear_rgb_test"

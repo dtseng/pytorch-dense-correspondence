@@ -1,0 +1,6 @@
+logs_root_path: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/logs_proto
+
+single_object_scenes_config_files:
+- simulated_blackshoes_rgb.yaml
+
+multi_object_scenes_config_files: []
