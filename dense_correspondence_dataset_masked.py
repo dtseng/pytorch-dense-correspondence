@@ -183,7 +183,6 @@ class DenseCorrespondenceDataset(data.Dataset):
         # image_a_rgb, image_b_rgb = self.both_to_tensor([image_a_rgb, image_b_rgb])
 
         # convert PIL.Image to torch.FloatTensor
-
         image_a_rgb = self.rgb_image_to_tensor(image_a_rgb)
         image_b_rgb = self.rgb_image_to_tensor(image_b_rgb)
 
@@ -259,7 +258,7 @@ class DenseCorrespondenceDataset(data.Dataset):
         return self.get_rgbd_mask_pose(scene_name, img_idx)
 
 
-    def get_img_idx_with_different_pose(self, scene_name, pose_a, threshold=0.2, angle_threshold=20, num_attempts=100):
+    def get_img_idx_with_different_pose(self, scene_name, pose_a, threshold=0.2, angle_threshold=20, num_attempts=10):
         """
         Try to get an image with a different pose to the one passed in. If one can't be found
         then return None
@@ -275,62 +274,40 @@ class DenseCorrespondenceDataset(data.Dataset):
         :rtype: int or None
         """
 
-        def dotproduct(v1, v2):
-            return v1.dot(v2)
-
-        def length(v):
-            return np.sqrt(dotproduct(v, v))
-
-        def angle(v1, v2):
-            return np.arccos(dotproduct(v1, v2) / (length(v1) * length(v2)))
+        print(1/0)
 
         #!! it seems like the angle_threshold is wrong, it's probably supposed to be in radians, not degrees
-#
-        pose_a_original_facing_camera = np.linalg.inv(pose_a[:3, :3])[:3, 2]
-        print(pose_a_original_facing_camera)
+
+        # print("angle threshold: ", angle_threshold)
+        # print("threshold: ", threshold)
+        # print(1/0)
 
         counter = 0
-        while True:
         # while counter < num_attempts:
-
+        while counter < 100:
             img_idx = self.get_random_image_index(scene_name)
             pose = self.get_pose_from_scene_name_and_idx(scene_name, img_idx)
             diff = utils.compute_distance_between_poses(pose_a, pose)
             angle_diff = utils.compute_angle_between_poses(pose_a, pose)
-
-            transformed_vec = pose[:3, :3].dot(pose_a_original_facing_camera)
-            angle_view = angle(np.array([0, 0, 1]), transformed_vec) * 180 / np.pi
-            # print(angle_view)
-
             # if angle_diff > 0.35 and angle_diff < 2.0: # !!!!!
-            # if z_angle > 170:
+            if (diff > threshold) or (angle_diff > angle_threshold):
 
-            if diff > threshold and angle_view < 90:
-            # if (diff > threshold) or (angle_diff > angle_threshold):
-                # print(angle(pose_a[:3,2], pose[:3, 2]) * 180 / np.pi)
-                print("angle..", angle_view)
-
-
+                print("pose_a")
+                print(pose_a)
+                print("pose_b")
+                print(pose)
 
 
-                # print("pose_a")
-                # print(pose_a)
-                #
-                # print('pose_b')
-                # print(pose)
-                #
-                #
-                #
-                # print("diff",  diff)
-                # print("angle_diff", angle_diff)
-                # quat_a = transformations.quaternion_from_matrix(pose_a)
-                # quat_b = transformations.quaternion_from_matrix(pose)
-                # print("quat_a", quat_a)
-                # print("quat_b", quat_b)
-                # test1 = transformations.rotation_from_matrix(pose_a)
-                # test2 = transformations.rotation_from_matrix(pose)
-                # print("rot1: ", test1)
-                # print("rot2: ", test2)
+                print("diff",  diff)
+                print("angle_diff", angle_diff)
+                quat_a = transformations.quaternion_from_matrix(pose_a)
+                quat_b = transformations.quaternion_from_matrix(pose)
+                print("quat_a", quat_a)
+                print("quat_b", quat_b)
+                test1 = transformations.rotation_from_matrix(pose_a)
+                test2 = transformations.rotation_from_matrix(pose)
+                print("rot1: ", test1)
+                print("rot2: ", test2)
 
 
 

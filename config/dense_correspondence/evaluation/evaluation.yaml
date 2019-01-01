@@ -19,6 +19,12 @@ networks:
     path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/elephant_3/003500.pth
   elephant_rgb_3:
     path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/elephant_rgb_3/003500.pth
+  elephant_rgb_samescene_3:
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/elephant_rgb_samescene_3/004000.pth
+  elephant_samescene_3:
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/elephant_samescene_3/004000.pth
+
+
 
 
 

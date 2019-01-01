@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import sys, os
 import numpy as np
 import warnings
@@ -9,6 +8,10 @@ utils.add_dense_correspondence_to_python_path()
 
 
 from PIL import Image
+
+
+import matplotlib.pyplot as plt
+
 
 import torch
 import torch.nn as nn
@@ -168,8 +171,10 @@ class DenseCorrespondenceNetwork(nn.Module):
         """
         Runs the network forward on an image
         :param img: img is an image as a numpy array in opencv format [0,255]
+                    H x W x C
         :return:
         """
+
         img_tensor = DenseCorrespondenceNetwork.IMAGE_TO_TENSOR(img)
 
         if cuda:
@@ -212,11 +217,26 @@ class DenseCorrespondenceNetwork(nn.Module):
         :rtype:
         """
 
+        # image = img_tensor.data.cpu().numpy()
+        # print(image[0].transpose((1, 2, 0)).shape)
+        # print("corner depth amount", image[0].transpose((1, 2, 0))[0, 0])
+        #
+        # plt.figure()
+        # plt.imshow(image[0].transpose((1, 2, 0)))
+
+
         if self._depth_invariant:
             N, D, H, W = list(img_tensor.size())
             img_tensor_flattened = img_tensor.view([N, D, -1])
             mean = torch.mean(img_tensor_flattened, dim=2, keepdim=True).repeat(1, 1, H*W)
             img_tensor = (img_tensor_flattened - mean).view([N, D, H, W])
+
+        # print("after")
+        # image = img_tensor.data.cpu().numpy()
+        # print("corner depth amount", image[0].transpose((1, 2, 0))[0, 0])
+
+        # plt.figure()
+        # plt.imshow(image[0].transpose((1, 2, 0)))
 
         res = self.fcn(img_tensor)
         if self._normalize:

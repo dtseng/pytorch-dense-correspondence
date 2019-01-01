@@ -1,3 +1,4 @@
+# import matplotlib
 import dense_correspondence_manipulation.utils.utils as utils
 utils.add_dense_correspondence_to_python_path()
 from dense_correspondence.training.training import *
@@ -5,7 +6,7 @@ import sys
 import logging
 
 # utils.set_default_cuda_visible_devices()
-utils.set_cuda_visible_devices([1]) # use this to manually set CUDA_VISIBLE_DEVICES
+utils.set_cuda_visible_devices([0]) # use this to manually set CUDA_VISIBLE_DEVICES
 
 from dense_correspondence.training.training import DenseCorrespondenceTraining
 from dense_correspondence.dataset.spartan_dataset_masked import SpartanDataset
