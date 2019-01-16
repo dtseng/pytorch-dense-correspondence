@@ -259,10 +259,14 @@ class DenseCorrespondenceDataset(data.Dataset):
         return self.get_rgbd_mask_pose(scene_name, img_idx)
 
 
-    def get_img_idx_with_different_pose(self, scene_name, pose_a, threshold=0.2, angle_threshold=20, num_attempts=100):
+    def get_img_idx_with_different_pose(self, scene_name, pose_a, threshold=0.2,
+                        angle_threshold=20, num_attempts=100, similar_angle=False):
         """
         Try to get an image with a different pose to the one passed in. If one can't be found
         then return None
+
+        :param similar_angle: True if you only want to get image poses that are
+                        close together, depending on angle.
         :param scene_name:
         :type scene_name:
         :param pose_a:
@@ -275,43 +279,45 @@ class DenseCorrespondenceDataset(data.Dataset):
         :rtype: int or None
         """
 
-        def dotproduct(v1, v2):
-            return v1.dot(v2)
-
-        def length(v):
-            return np.sqrt(dotproduct(v, v))
-
-        def angle(v1, v2):
-            return np.arccos(dotproduct(v1, v2) / (length(v1) * length(v2)))
+        # def dotproduct(v1, v2):
+        #     return v1.dot(v2)
+        #
+        # def length(v):
+        #     return np.sqrt(dotproduct(v, v))
+        #
+        # def angle(v1, v2):
+        #     return np.arccos(dotproduct(v1, v2) / (length(v1) * length(v2)))
 
         #!! it seems like the angle_threshold is wrong, it's probably supposed to be in radians, not degrees
 #
-        pose_a_original_facing_camera = np.linalg.inv(pose_a[:3, :3])[:3, 2]
-        print(pose_a_original_facing_camera)
+        # pose_a_original_facing_camera = -np.linalg.inv(pose_a[:3, :3])[:3, 2]
 
         counter = 0
-        while True:
-        # while counter < num_attempts:
+        while counter < num_attempts:
 
             img_idx = self.get_random_image_index(scene_name)
             pose = self.get_pose_from_scene_name_and_idx(scene_name, img_idx)
             diff = utils.compute_distance_between_poses(pose_a, pose)
             angle_diff = utils.compute_angle_between_poses(pose_a, pose)
+            # angle_diff2 = utils.compute_angle_between_poses(pose, pose_a)
+            angle_diff = min(angle_diff, 2 * np.pi - angle_diff)
 
-            transformed_vec = pose[:3, :3].dot(pose_a_original_facing_camera)
-            angle_view = angle(np.array([0, 0, 1]), transformed_vec) * 180 / np.pi
-            # print(angle_view)
+            # transformed_vec = pose[:3, :3].dot(pose_a_original_facing_camera)
+            # angle_view = angle(np.array([0, 0, -1]), transformed_vec) * 180 / np.pi
 
-            # if angle_diff > 0.35 and angle_diff < 2.0: # !!!!!
-            # if z_angle > 170:
+            if similar_angle:
+                print("using similar angle")
+                condition = angle_diff > 0.35 and angle_diff < 2.0
+            else: # original
+                condition = (diff > threshold) or (angle_diff > angle_threshold)
 
-            if diff > threshold and angle_view < 90:
-            # if (diff > threshold) or (angle_diff > angle_threshold):
+            # if angle_view  > (360-60)  or angle_view < 60:
+
+            # if angle_view < 93 and angle_view > 87:
+            # if angle_diff > (360-60) * np.pi / 180 or angle_diff < 60 * np.pi / 180:
+            if condition:
                 # print(angle(pose_a[:3,2], pose[:3, 2]) * 180 / np.pi)
-                print("angle..", angle_view)
-
-
-
+                # print("angle..", angle_view)
 
                 # print("pose_a")
                 # print(pose_a)

@@ -1125,7 +1125,7 @@ class DenseCorrespondenceEvaluation(object):
 
     @staticmethod
     def single_image_pair_qualitative_analysis(dcn, dataset, rgb_a, rgb_b, mask_a, mask_b,
-                                               num_matches):
+                                               num_matches, patch_size=None):
         """
         Computes qualtitative assessment of DCN performance for a pair of
         images
@@ -1145,8 +1145,20 @@ class DenseCorrespondenceEvaluation(object):
         :return: None
         """
 
-        mask_a = np.asarray(mask_a)
-        mask_b = np.asarray(mask_b)
+        if type(mask_a) is np.ndarray:
+            assert type(mask_b) is np.ndarray
+            if len(mask_a.shape) == 3:
+                assert len(mask_b.shape) == 3
+                mask_a = mask_a[:, :, 0]
+                mask_b = mask_b[:, :, 0]
+        else:
+            mask_a = np.asarray(mask_a)
+            mask_b = np.asarray(mask_b)
+
+        # print(mask_a.shape)
+        # print(np.min(mask_a), np.max(mask_a))
+        # print(1/0)
+
 
         # compute dense descriptors
         rgb_a_tensor = dataset.rgb_image_to_tensor(rgb_a)
@@ -1182,9 +1194,16 @@ class DenseCorrespondenceEvaluation(object):
         for i in xrange(0, num_matches):
             # convert to (u,v) format
             pixel_a = [sampled_idx_list[1][i], sampled_idx_list[0][i]]
-            best_match_uv, best_match_diff, norm_diffs =\
-                DenseCorrespondenceNetwork.find_best_match(pixel_a, res_a,
-                                                                                                     res_b)
+
+
+            if patch_size is None:
+                best_match_uv, best_match_diff, norm_diffs =\
+                    DenseCorrespondenceNetwork.find_best_match(pixel_a, res_a, res_b)
+
+            else:
+                best_match_uv, best_match_diff, norm_diffs =\
+                    DenseCorrespondenceNetwork.find_best_patch_match(pixel_a, res_a, res_b, filter_size=patch_size)
+
 
             # be careful, OpenCV format is  (u,v) = (right, down)
             kp1.append(cv2.KeyPoint(pixel_a[0], pixel_a[1], diam))
@@ -1960,7 +1979,8 @@ class DenseCorrespondenceEvaluation(object):
                                   save_folder_name="analysis",
                                   compute_descriptor_statistics=True,
                                   cross_scene=True,
-                                  dataset=None):
+                                  dataset=None,
+                                  iteration=None):
         """
         Runs all the quantitative evaluations on the model folder
         Creates a folder model_folder/analysis that stores the information.
@@ -1996,7 +2016,7 @@ class DenseCorrespondenceEvaluation(object):
                 os.makedirs(dir)
 
 
-        dcn = DenseCorrespondenceNetwork.from_model_folder(model_folder)
+        dcn = DenseCorrespondenceNetwork.from_model_folder(model_folder, iteration=iteration)
         dcn.eval()
 
         if dataset is None:

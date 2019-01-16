@@ -504,8 +504,6 @@ class SpartanDataset(DenseCorrespondenceDataset):
         metadata["scene_name"] = scene_name
         metadata["type"] = SpartanDatasetDataType.SINGLE_OBJECT_WITHIN_SCENE
 
-        print(metadata)
-
         return self.get_within_scene_data(scene_name, metadata)
 
     def get_multi_object_within_scene_data(self):
@@ -1100,7 +1098,6 @@ class SpartanDataset(DenseCorrespondenceDataset):
         #     return constants.DEFAULT_IMAGE_MEAN
 
         # return self.config["image_normalization"]["mean"]
-
 
         return constants.DEFAULT_IMAGE_MEAN
 

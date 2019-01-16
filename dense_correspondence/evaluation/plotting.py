@@ -46,7 +46,7 @@ def normalize_descriptor_pair(res_a, res_b):
         normed_res_a[:,:,d] = (res_a[:,:,d] - both_min)/scale_factor
         normed_res_b[:,:,d] = (res_b[:,:,d] - both_min)/scale_factor
 
-        
+
     return normed_res_a, normed_res_b
 
 def normalize_masked_descriptor_pair(res_a, res_b, mask_a, mask_b):
@@ -83,7 +83,7 @@ def normalize_masked_descriptor_pair(res_a, res_b, mask_a, mask_b):
 
     normed_res_a = normed_res_a * mask_a
     normed_res_b = normed_res_b * mask_b
-        
+
     return normed_res_a, normed_res_b
 
 
@@ -93,7 +93,7 @@ def pil_image_to_cv2(pil_image):
     :param pil_image: RGB PIL Image
     :type pil_image: PIL.Image
     :return: a numpy array that cv2 likes
-    :rtype: numpy array 
+    :rtype: numpy array
     """
     return np.array(pil_image)[:, :, ::-1].copy() # open and convert between BGR and RGB
 
