@@ -89,7 +89,7 @@ class DenseCorrespondenceTraining(object):
         if self._dataset is None:
             self._dataset = SpartanDataset.make_default_10_scenes_drill()
 
-        
+
         self._dataset.load_all_pose_data()
         self._dataset.set_parameters_from_training_config(self._config)
 
@@ -101,7 +101,7 @@ class DenseCorrespondenceTraining(object):
             if self._dataset_test is None:
                 self._dataset_test = SpartanDataset(mode="test", config=self._dataset.config)
 
-            
+
             self._dataset_test.load_all_pose_data()
             self._dataset_test.set_parameters_from_training_config(self._config)
 
@@ -271,7 +271,7 @@ class DenseCorrespondenceTraining(object):
         # logging
         self._logging_dict = dict()
         self._logging_dict['train'] = {"iteration": [], "loss": [], "match_loss": [],
-                                           "masked_non_match_loss": [], 
+                                           "masked_non_match_loss": [],
                                            "background_non_match_loss": [],
                                            "blind_non_match_loss": [],
                                            "learning_rate": [],
@@ -305,7 +305,7 @@ class DenseCorrespondenceTraining(object):
 
                 data_type = metadata["type"][0]
 
-                
+
                 img_a = Variable(img_a.cuda(), requires_grad=False)
                 img_b = Variable(img_b.cuda(), requires_grad=False)
 
@@ -338,7 +338,7 @@ class DenseCorrespondenceTraining(object):
                                                                                 masked_non_matches_a, masked_non_matches_b,
                                                                                 background_non_matches_a, background_non_matches_b,
                                                                                 blind_non_matches_a, blind_non_matches_b)
-                
+
 
                 loss.backward()
                 optimizer.step()
@@ -398,7 +398,7 @@ class DenseCorrespondenceTraining(object):
 
                     elif data_type == SpartanDatasetDataType.MULTI_OBJECT:
                         self._tensorboard_logger.log_value("train loss MULTI_OBJECT", loss.data[0], loss_current_iteration)
-                    
+
                     elif data_type == SpartanDatasetDataType.SYNTHETIC_MULTI_OBJECT:
                         self._tensorboard_logger.log_value("train loss SYNTHETIC_MULTI_OBJECT", loss.data[0], loss_current_iteration)
                     else:
@@ -520,7 +520,7 @@ class DenseCorrespondenceTraining(object):
         utils.saveToYaml(self._config, training_params_file)
 
         dataset_params_file = os.path.join(self._logging_dir, 'dataset.yaml')
-        utils.saveToYaml(self._dataset.config, dataset_params_file)        
+        utils.saveToYaml(self._dataset.config, dataset_params_file)
 
     def adjust_learning_rate(self, optimizer, iteration):
         """
@@ -579,4 +579,3 @@ class DenseCorrespondenceTraining(object):
     def make_default():
         dataset = SpartanDataset.make_default_caterpillar()
         return DenseCorrespondenceTraining(dataset=dataset)
-

@@ -18,6 +18,7 @@ import torch.nn as nn
 from torchvision import transforms
 from torch.autograd import Variable
 import pytorch_segmentation_detection.models.resnet_dilated as resnet_dilated
+from scipy.ndimage import convolve
 from dense_correspondence.dataset.spartan_dataset_masked import SpartanDataset
 
 
@@ -250,10 +251,6 @@ class DenseCorrespondenceNetwork(nn.Module):
         """
         Simple forward pass on the network.
 
-        Normalize the image if we are in TEST mode
-        If we are in TRAIN mode then assume the dataset object has already normalized
-        the image
-
         :param img_tensor: torch.FloatTensor with shape [3,H,W]
         :type img_tensor:
         :return: torch.FloatTensor with shape  [H, W, D]
@@ -416,6 +413,53 @@ class DenseCorrespondenceNetwork(nn.Module):
                                                      model_param_file=model_param_file)
 
         return dcn
+
+    @staticmethod
+    def find_best_patch_match(pixel_a, res_a, res_b, filter_size=10, debug=False):
+        print("USING PATCH")
+        # descriptor_at_pixel = res_a[pixel_a[1], pixel_a[0]]
+        descriptor_at_pixel = res_a[pixel_a[1]-filter_size:pixel_a[1]+filter_size+1, pixel_a[0]-filter_size:pixel_a[0]+filter_size+1]
+        # print(descriptor_at_pixel)
+        # print(res_a[pixel_a[1], pixel_a[0]])
+        # print("descriptor pixel shape: ", descriptor_at_pixel.shape)
+
+
+        height, width, _ = res_a.shape
+
+        if debug:
+            print "height: ", height
+            print "width: ", width
+            print "res_b.shape: ", res_b.shape
+
+
+
+        # filtered = convolve(res_b, descriptor_at_pixel)
+
+        # print(descriptor_at_pixel.shape)
+        # print(1/0)
+
+        # non-vectorized version
+        norm_diffs = np.ones([height, width]) * float("inf")
+        for i in xrange(filter_size, height - filter_size):
+            for j in xrange(filter_size, width - filter_size):
+                # print(res_b[i-filter_size:i+filter_size+1, j-filter_size:j+filter_size+1].shape)
+
+                diff = res_b[i-filter_size:i+filter_size+1, j-filter_size:j+filter_size+1] - descriptor_at_pixel
+                norm_diffs[i,j] = np.linalg.norm(diff)**2
+
+        # norm_diffs = np.sqrt(np.sum(np.square(res_b - descriptor_at_pixel), axis=2))
+
+        best_match_flattened_idx = np.argmin(norm_diffs)
+        best_match_xy = np.unravel_index(best_match_flattened_idx, norm_diffs.shape)
+        best_match_diff = norm_diffs[best_match_xy]
+
+        best_match_uv = (best_match_xy[1], best_match_xy[0])
+
+        # print(1/0)
+
+        return best_match_uv, best_match_diff, norm_diffs
+
+
 
     @staticmethod
     def find_best_match(pixel_a, res_a, res_b, debug=False):
