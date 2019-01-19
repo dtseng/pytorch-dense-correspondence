@@ -27,6 +27,8 @@ networks:
     path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/elephant_cup_rgb_3/007000.pth
   elephant_unit_8:
     path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/elephant_unit_8/007000.pth
+  cup_bottlesauce_elephant_cat_pear_unit_8:
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/cup_bottlesauce_elephant_cat_pear_unit_8/007000.pth
 
 
 
