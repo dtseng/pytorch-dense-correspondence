@@ -19,15 +19,22 @@ import dense_correspondence.evaluation.plotting as dc_plotting
 import glob
 from scipy import misc
 import pickle
-from os.path import basename
+from os.path import basename, exists
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--name',  type=str, default="cup_bottlesauce_elephant_cat_pear_rgb_unit_16")
+parser.add_argument('--experiment', type=str, default="classification")
+parser.add_argument('--savefile', type=str, default="ycb_results.pkl")
+args = parser.parse_args()
 
+utils.set_cuda_visible_devices([0]) # use this to manually set CUDA_VISIBLE_DEVICES
 
 config_filename = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config',
                                'dense_correspondence', 'evaluation', 'evaluation.yaml')
 config = utils.getDictFromYamlFilename(config_filename)
 dce = DenseCorrespondenceEvaluation(config)
 DCE = DenseCorrespondenceEvaluation
-dcn = dce.load_network_from_config("cup_bottlesauce_elephant_cat_pear_rgb_unit_16")
+dcn = dce.load_network_from_config(args.name)
 print("Loaded network. ")
 dataset = dcn.load_training_dataset()
 print("Loaded dataset. ")
@@ -67,6 +74,7 @@ def match_index_and_norm_diff(query, features, cond=None):
     #         candidate_indices = np.argwhere(np.logical_and(ppfs[:,0] > 5/7*ppf_target[0], ppfs[:,0] < 9/7*ppf_target[0])).T[0]
 
     return result
+
 
 def simple_match(f1, f2, cond=None):
     """
@@ -164,7 +172,7 @@ def generate_PPF_samples(img, des, mask, num_samples=5):
         for j in range(i+1, num_samples):
             uv_A = [sampled_idx_list[1][i], sampled_idx_list[0][i]]
             uv_B = [sampled_idx_list[1][j], sampled_idx_list[0][j]]
-            if dist(uv_A, uv_B) > 20: # Basic: Increase pixel distance. # !!! this might be a reason for failure for small objects
+            if dist(uv_A, uv_B) > 10: # Basic: Increase pixel distance. # !!! this might be a reason for failure for small objects
 #                                       # TODO: Increase physical spatial difference
 #                                       # TODO: Increase feature space difference
                 coord_lst.append((uv_A, uv_B))
@@ -181,16 +189,24 @@ def generate_PPF_samples(img, des, mask, num_samples=5):
 # key: "banana", value: [('object1', norm), ('object2', norm)]
 results = {}
 num_in_top_5 = 0
-target_files = sorted(glob.glob("/nfs/diskstation/objects/meshes/ycb/*"))
+# target_files = sorted(glob.glob("/nfs/diskstation/objects/meshes/ycb/*"))
+# all_heap_paths = sorted(glob.glob("/nfs/diskstation/objects/meshes/ycb/*"))
+
+target_files = sorted(glob.glob("images/ycb_thingiverse_targets/*"))
+# all_heap_paths = sorted(glob.glob("images/ycb_thingiverse_heap/*"))
+all_heap_paths = target_files
 target_ppfs = {}
 
-def test_on_heap(heap_name):
+
+def classification_from_heap(heap_name):
+    """
+    For every heap image, get the top N matches from target image.
+    """
     global num_in_top_5
     print("===========================ON HEAP {}========================".format(heap_name))
-    heap_img = Image.open("images/ycb_heap_0/{}/rgb.png".format(heap_name)).convert('RGB')
-    heap_depth = misc.imread("images/ycb_heap_0/{}/depth_unscaled.png".format(heap_name))
-
-    heap_mask = np.load("images/ycb_heap_0/{}/mask.npy".format(heap_name)).astype(np.bool)
+    heap_img = Image.open("images/ycb_thingiverse_heap/{}/rgb.png".format(heap_name)).convert('RGB')
+    heap_depth = misc.imread("images/ycb_thingiverse_heap/{}/depth_unscaled.png".format(heap_name))
+    heap_mask = np.load("images/ycb_thingiverse_heap/{}/mask.npy".format(heap_name)).astype(np.bool)
     heap = np.array(heap_img)
     heap_descriptors = run_dcn_on_image(dcn, dataset, heap_img)
     ppf_heap, _ = generate_PPF_samples(heap_depth, heap_descriptors, heap_mask, 100)
@@ -205,11 +221,11 @@ def test_on_heap(heap_name):
 
         for i in range(6):
             if target_name in target_ppfs:
-                ppf_t = target_ppfs[target_name][0]
+                ppf_t = target_ppfs[target_name][i]
             else:
-                target_mask = np.load("images/ycb_targets/{}/mask_{}.npy".format(target_name, i)).astype(np.bool)
-                target_depth = misc.imread("images/ycb_targets/{}/depth_unscaled_{}.png".format(target_name, i))
-                target_img = Image.open("images/ycb_targets/{}/rgb_{}.png".format(target_name, i)).convert('RGB')
+                target_mask = np.load("images/ycb_thingiverse_targets/{}/mask_{}.npy".format(target_name, i)).astype(np.bool)
+                target_depth = misc.imread("images/ycb_thingiverse_targets/{}/depth_unscaled_{}.png".format(target_name, i))
+                target_img = Image.open("images/ycb_thingiverse_targets/{}/rgb_{}.png".format(target_name, i)).convert('RGB')
                 target_descriptors = run_dcn_on_image(dcn, dataset, target_img)
 
                 ppf_t, _ = generate_PPF_samples(target_depth, target_descriptors, target_mask, 100)
@@ -217,34 +233,71 @@ def test_on_heap(heap_name):
 
             # Generate ppfs for each object in the heap
             best_matches_lst = simple_match(ppf_t, ppf_heap, cond="ppf")
-            distances = [match[2] for match in best_matches_lst]
-            if len(distances) > 0:
-                smallest_norm = min(smallest_norm, min(distances))
+            if len(best_matches_lst) > 0:
+                distances = [match[2] for match in best_matches_lst]
+                distances = np.array(sorted(distances)[:10])
+                smallest_norm = min(smallest_norm, np.mean(distances))
         cur_results.append((target_name, smallest_norm))
         if target_name not in target_ppfs:
             target_ppfs[target_name] = cur_ppfs
 
-
         # print(cur_results)
     cur_results = sorted(cur_results, key = lambda x: x[1])
     results[heap_name] = cur_results
-    with open('ycb_results.pkl', 'wb') as handle:
+    with open(args.savefile, 'wb') as handle:
         pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     print(cur_results)
-    for i in range(5):
-        if cur_results[i][0] == heap_name:
-            num_in_top_5 += 1
-            break
+    # for i in range(5):
+    #     if cur_results[i][0] == heap_name:
+    #         num_in_top_5 += 1
+    #         break
 
-all_heap_paths = sorted(glob.glob("/nfs/diskstation/objects/meshes/ycb/*"))
+def heapsearch_from_target(target_name):
+    target_ppfs = []
+    cur_results = []
+    print("===========================ON TARGET {}========================".format(target_name))
+
+    for i in range(6):
+        target_mask = np.load("images/ycb_thingiverse_targets/{}/mask_{}.npy".format(target_name, i)).astype(np.bool)
+        target_depth = misc.imread("images/ycb_thingiverse_targets/{}/depth_unscaled_{}.png".format(target_name, i))
+        target_img = Image.open("images/ycb_thingiverse_targets/{}/rgb_{}.png".format(target_name, i)).convert('RGB')
+        target_descriptors = run_dcn_on_image(dcn, dataset, target_img)
+        ppf_t, _ = generate_PPF_samples(target_depth, target_descriptors, target_mask, 100)
+        target_ppfs.append(ppf_t)
+
+    for heap_path in all_heap_paths:
+        print("Testing heap: {}".format(heap_path))
+        heap_name = basename(heap_path).split(".")[0]
+        heap_img = Image.open("images/ycb_thingiverse_heap/{}/rgb.png".format(heap_name)).convert('RGB')
+        heap_depth = misc.imread("images/ycb_thingiverse_heap/{}/depth_unscaled.png".format(heap_name))
+
+        heap_mask = np.load("images/ycb_thingiverse_heap/{}/mask.npy".format(heap_name)).astype(np.bool)
+        heap = np.array(heap_img)
+        heap_descriptors = run_dcn_on_image(dcn, dataset, heap_img)
+        ppf_heap, _ = generate_PPF_samples(heap_depth, heap_descriptors, heap_mask, 100)
+
+        smallest_norm = float('inf')
+        for i in range(6):
+            ppf_t = target_ppfs[i]
+            best_matches_lst = simple_match(ppf_t, ppf_heap, cond="ppf")
+            if len(best_matches_lst) > 0:
+                distances = [match[2] for match in best_matches_lst]
+                distances = np.array(sorted(distances)[:10])
+                smallest_norm = min(smallest_norm, np.mean(distances))
+        cur_results.append((heap_name, smallest_norm))
+    results[target_name] = sorted(cur_results, key = lambda x: x[1])
+    with open(args.savefile, 'wb') as handle:
+        pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-for heap_path in all_heap_paths:
-    heap_name = basename(heap_path).split(".")[0]
-    test_on_heap(heap_name)
-
-print("RESULT: Percent that have in top 5: ", num_in_top_5/len(all_heap_paths))
-
-
-# test_on_heap("banana")
+if args.experiment == "classification":
+    print("Running classification")
+    for heap_path in all_heap_paths:
+        heap_name = basename(heap_path)
+        classification_from_heap(heap_name)
+elif args.experiment == "heapsearch":
+    print("Running heapsearch")
+    for target_path in target_files:
+        target_name = basename(target_path)
+        heapsearch_from_target(target_name)
