@@ -19,7 +19,12 @@ parser.add_argument('--dim', type=int, default=3)
 parser.add_argument('--iters', type=int, default=3500)
 parser.add_argument('--normalization', type=str, default="standard") # unit or standard
 parser.add_argument('--depth_invariant', action='store_true')
+parser.add_argument("--resume", help="resume from checkpoint params",
+                    action="store_true")
 args = parser.parse_args()
+
+if args.resume:
+    print("About to resume training")
 
 logging.basicConfig(level=logging.INFO)
 
@@ -53,4 +58,7 @@ if args.depth_invariant == True:
 
 
 train = DenseCorrespondenceTraining(dataset=dataset, config=train_config)
-train.run()
+if args.resume:
+    train.run_from_pretrained("simulated/{}".format(args.name))
+else:
+    train.run()

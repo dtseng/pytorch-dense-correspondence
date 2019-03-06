@@ -181,9 +181,12 @@ class DenseCorrespondenceTraining(object):
         :rtype:
         """
 
+
         if not os.path.isdir(model_folder):
             pdc_path = utils.getPdcPath()
             model_folder = os.path.join(pdc_path, "trained_models", model_folder)
+
+        print("Loading from model folder: {}".format(model_folder))
 
         # find idx.pth and idx.pth.opt files
         if iteration is None:
@@ -208,6 +211,8 @@ class DenseCorrespondenceTraining(object):
 
         self._optimizer = self._construct_optimizer(self._dcn.parameters())
         self._optimizer.load_state_dict(torch.load(optim_param_file))
+
+        print("Found iteration: {}".format(iteration))
 
         return iteration
 

@@ -28,19 +28,19 @@ networks:
   elephant_unit_8:
     path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/elephant_unit_8/007000.pth
   cup_bottlesauce_elephant_cat_pear_unit_8:
-    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/cup_bottlesauce_elephant_cat_pear_unit_8/007000.pth
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/cup_bottlesauce_elephant_cat_pear_unit_8/010000.pth
   cup_bottlesauce_elephant_cat_pear_rgb_unit_16:
     path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/cup_bottlesauce_elephant_cat_pear_rgb_unit_16/010000.pth
   cup_bottlesauce_elephant_cat_pear_unit_16:
     path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/cup_bottlesauce_elephant_cat_pear_unit_16/010000.pth
   elephant_rgb_unit_8:
     path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/elephant_rgb_unit_8/007000.pth
-
-
-
-
-
-
+  cup_bottlesauce_elephant_cat_pear_unit_32:
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/cup_bottlesauce_elephant_cat_pear_rgb_unit_16/010000.pth
+  thingiverse_multi_rgb_unit_16:
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/thingiverse_multi_rgb_unit_16/009500.pth
+  thingiverse_rgb_unit_16:
+    path_to_network_params: /home/davidtseng/pytorch-dense-correspondence/data_volume/pdc/trained_models/simulated/thingiverse_multi_rgb_unit_16/009500.pth
 
 
 dataset: [] # which dataset to use, not used for now
