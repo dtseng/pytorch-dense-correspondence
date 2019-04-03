@@ -38,6 +38,10 @@ class ImageType:
     DEPTH = 1
     MASK = 2
 
+class MechSearchDataType:
+    TARGET = "target"
+    HEAP = "heap"
+
 class DenseCorrespondenceDataset(data.Dataset):
 
     def __init__(self, debug=False):
@@ -93,13 +97,14 @@ class DenseCorrespondenceDataset(data.Dataset):
         metadata['scene_name'] = scene_name
 
         # image a
-        image_a_idx = self.get_random_image_index(scene_name)
+        image_a_idx = self.get_random_image_index(scene_name, type=MechSearchDataType.TARGET)
         image_a_rgb, image_a_depth, image_a_mask, image_a_pose = self.get_rgbd_mask_pose(scene_name, image_a_idx)
-
+        image_a_obj_id = self.get_pose_data(scene_name, type=MechSearchDataType.TARGET)[image_a_idx]['obj_id']
         metadata['image_a_idx'] = image_a_idx
 
         # image b
-        image_b_idx = self.get_img_idx_with_different_pose(scene_name, image_a_pose, num_attempts=50)
+        image_b_idx = self.get_random_image_index(scene_name, type=MechSearchDataType.HEAP)
+        # image_b_idx = self.get_img_idx_with_different_pose(scene_name, image_a_pose, num_attempts=50)
         metadata['image_b_idx'] = image_b_idx
         if image_b_idx is None:
             logging.info("no frame with sufficiently different pose found, returning")
@@ -107,8 +112,7 @@ class DenseCorrespondenceDataset(data.Dataset):
             image_a_rgb_tensor = self.rgb_image_to_tensor(image_a_rgb)
             return self.return_empty_data(image_a_rgb_tensor, image_a_rgb_tensor)
 
-        image_b_rgb, image_b_depth, image_b_mask, image_b_pose = self.get_rgbd_mask_pose(scene_name, image_b_idx)
-
+        image_b_rgb, image_b_depth, image_b_mask, image_b_pose = self.get_rgbd_mask_pose(scene_name, image_b_idx, image_a_obj_id)
         image_a_depth_numpy = np.asarray(image_a_depth)
         image_b_depth_numpy = np.asarray(image_b_depth)
 
@@ -224,23 +228,27 @@ class DenseCorrespondenceDataset(data.Dataset):
         """
         return ((len(tensor) == 1) and (tensor[0] == -1))
 
-    def get_rgbd_mask_pose(self, scene_name, img_idx):
+    def get_rgbd_mask_pose(self, scene_name, img_idx, obj_id=None):
         """
         Returns rgb image, depth image, mask and pose.
         :param scene_name:
         :type scene_name: str
         :param img_idx:
+        :parm obj_id: if none, ignore. otherwise it's a target, get mask for that obj_id
         :type img_idx: int
         :return: rgb, depth, mask, pose
         :rtype: PIL.Image.Image, PIL.Image.Image, PIL.Image.Image, a 4x4 numpy array
         """
         rgb_file = self.get_image_filename(scene_name, img_idx, ImageType.RGB)
         rgb = self.get_rgb_image(rgb_file)
+        # print("rgb_file", rgb_file)
 
         depth_file = self.get_image_filename(scene_name, img_idx, ImageType.DEPTH)
         depth = self.get_depth_image(depth_file)
+        # print("depth_file", depth_file)
 
-        mask_file = self.get_image_filename(scene_name, img_idx, ImageType.MASK)
+        mask_file = self.get_image_filename(scene_name, img_idx, ImageType.MASK, obj_id)
+        # print("mask_file", mask_file)
         mask = self.get_mask_image(mask_file)
 
         pose = self.get_pose_from_scene_name_and_idx(scene_name, img_idx)
@@ -260,7 +268,7 @@ class DenseCorrespondenceDataset(data.Dataset):
 
 
     def get_img_idx_with_different_pose(self, scene_name, pose_a, threshold=0.2,
-                        angle_threshold=20, num_attempts=100, similar_angle=True):
+                        angle_threshold=20, num_attempts=100, similar_angle=False):
         """
         Try to get an image with a different pose to the one passed in. If one can't be found
         then return None
@@ -315,7 +323,10 @@ class DenseCorrespondenceDataset(data.Dataset):
 
             # if angle_view < 93 and angle_view > 87:
             # if angle_diff > (360-60) * np.pi / 180 or angle_diff < 60 * np.pi / 180:
-            if condition:
+            if True:
+                print("Accepting all possible pairs")
+
+            # if condition:
                 # print(angle(pose_a[:3,2], pose[:3, 2]) * 180 / np.pi)
                 # print("angle..", angle_view)
 
@@ -337,7 +348,6 @@ class DenseCorrespondenceDataset(data.Dataset):
                 # test2 = transformations.rotation_from_matrix(pose)
                 # print("rot1: ", test1)
                 # print("rot2: ", test2)
-
 
 
                 return img_idx
@@ -432,7 +442,7 @@ class DenseCorrespondenceDataset(data.Dataset):
         img_filename = self.get_image_filename(scene_name, img_idx, ImageType.MASK)
         return self.get_mask_image(img_filename)
 
-    def get_image_filename(self, scene_name, img_index, image_type):
+    def get_image_filename(self, scene_name, img_index, image_type, obj_id=None):
         raise NotImplementedError("Implement in superclass")
 
     def load_all_pose_data(self):
@@ -443,6 +453,18 @@ class DenseCorrespondenceDataset(data.Dataset):
         :rtype:
         """
         raise NotImplementedError("subclass must implement this method")
+
+    def get_pose_data(self, scene_name, type=None):
+        """
+        Checks if have not already loaded the pose_data.yaml for this scene,
+        if haven't then loads it. Then returns the dict of the pose_data.yaml.
+        :type scene_name: str
+        :type type: MechSearchDataType
+        :return: a dict() of the pose_data.yaml for the scene.
+        :rtype: dict()
+        """
+        raise NotImplementedError("subclass must implement this method")
+
 
     def get_pose_from_scene_name_and_idx(self, scene_name, idx):
         """
@@ -495,11 +517,12 @@ class DenseCorrespondenceDataset(data.Dataset):
         """
         return random.choice(self.scenes)
 
-    def get_random_image_index(self, scene_name):
+    def get_random_image_index(self, scene_name, type=None):
         """
         Returns a random image index from a given scene
         :param scene_name:
         :type scene_name:
+        :type type: MechSearchDataType
         :return:
         :rtype:
         """

@@ -58,4 +58,3 @@ def plot_correspondences_direct(img_a_rgb, img_a_depth, img_b_rgb, img_b_depth, 
     """
     images = [img_a_rgb, img_b_rgb, img_a_depth, img_b_depth]
     return plot_correspondences(images, uv_a, uv_b, use_previous_plot=use_previous_plot, circ_color=circ_color, show=show)
-    

@@ -34,7 +34,7 @@ import dense_correspondence_manipulation.utils.segmentation as segmentation
 
 class DepthImageVisualizer(object):
     def __init__(self, window_title='Depth Image', scale=1):
-        
+
         self.scale = scale
 
         depthImageColorByRange = [0.0, 4.0]
@@ -120,7 +120,7 @@ class ChangeDetection(object):
         self.depthScanners['background'] = initDepthScanner(self.app, self.views['background'],
                                                             widgetArea=QtCore.Qt.LeftDockWidgetArea)
 
-        
+
         # self.changeDetectionPointCloudView = PythonQt.dd.ddQVTKWidgetView()
         # self.changeDetectionPointCloudView.setWindowTitle('Change Detection Pointcloud')
         # dock = self.app.app.addWidgetToDock(self.changeDetectionPointCloudView, QtCore.Qt.BottomDockWidgetArea)
@@ -160,7 +160,7 @@ class ChangeDetection(object):
 
         view = self.views['foreground']
         self._foreground_reconstruction.visualize_reconstruction(view)
-        
+
 
     def createBackgroundView(self):
         """
@@ -217,7 +217,7 @@ class ChangeDetection(object):
 
         self.updateDepthScanners()
 
-        
+
     def computeForegroundMask(self, visualize=True):
         """
         Computes the foreground mask. The camera location of the foreground view should
@@ -324,7 +324,7 @@ class ChangeDetection(object):
         wraparound if you are usint uint16 type.
         """
 
-        
+
         idx = (img_b - img_f) > threshold
         mask = np.zeros(np.shape(img_f))
         mask[idx] = 1
@@ -376,6 +376,8 @@ class ChangeDetection(object):
         counter = 0
 
         for idx, value in camera_pose_data.pose_dict.iteritems():
+            # print(self.cameraIntrinsics)
+            # print(1/0)
             if (counter % logging_rate) == 0:
                 print "Rendering mask for pose %d of %d" %(counter + 1, num_poses)
 
@@ -558,7 +560,7 @@ class ChangeDetection(object):
         d.addCube(dims, center, color=[0,1,0])
 
         d.addPolyData(self.backgroundPolyData)
-        
+
 
         self.foregroundPolyData = d.getPolyData()
 
@@ -682,15 +684,25 @@ def initDepthScanner(app, view, widgetArea=QtCore.Qt.RightDockWidgetArea):
     return depthScanner
 
 def makeDefaultCameraIntrinsics():
-    fx = 533.6422696034836
-    cx = 319.4091030774892
-    fy = 534.7824445233571
-    cy = 236.4374299691866
+    # fx = 533.6422696034836
+    # cx = 319.4091030774892
+    # fy = 534.7824445233571
+    # cy = 236.4374299691866
+
+    # fx = 520.0
+    # cx = 319.5
+    # fy = 520.0
+    # cy = 239.5
+
+    fx = 686.0
+    cx = 319.5
+    fy = 686.0
+    cy = 239.5
 
     width = 640
     height = 480
 
-    return utils.CameraIntrinsics(cx, cy, fx, fy, width, height)\
+    return utils.CameraIntrinsics(cx, cy, fx, fy, width, height)
 
 def loadDefaultBackground():
     data_folder = '/home/manuelli/code/data_volume/sandbox/drill_scenes/00_background'

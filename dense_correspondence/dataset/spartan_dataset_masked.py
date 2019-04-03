@@ -1,4 +1,4 @@
-from dense_correspondence_dataset_masked import DenseCorrespondenceDataset, ImageType
+from dense_correspondence_dataset_masked import DenseCorrespondenceDataset, ImageType, MechSearchDataType
 
 import os
 import numpy as np
@@ -21,10 +21,6 @@ import dense_correspondence_manipulation.utils.constants as constants
 utils.add_dense_correspondence_to_python_path()
 import dense_correspondence.correspondence_tools.correspondence_finder as correspondence_finder
 import dense_correspondence.correspondence_tools.correspondence_augmentation as correspondence_augmentation
-
-
-
-
 
 class SpartanDatasetDataType:
     SINGLE_OBJECT_WITHIN_SCENE = 0
@@ -273,11 +269,12 @@ class SpartanDataset(DenseCorrespondenceDataset):
         for scene_name in self.scene_generator():
             self.get_pose_data(scene_name)
 
-    def get_pose_data(self, scene_name):
+    def get_pose_data(self, scene_name, type=None):
         """
         Checks if have not already loaded the pose_data.yaml for this scene,
         if haven't then loads it. Then returns the dict of the pose_data.yaml.
         :type scene_name: str
+        :type type: MechSearchDataType
         :return: a dict() of the pose_data.yaml for the scene.
         :rtype: dict()
         """
@@ -287,8 +284,10 @@ class SpartanDataset(DenseCorrespondenceDataset):
                                               'images', 'pose_data.yaml')
             self._pose_data[scene_name] = utils.getDictFromYamlFilename(pose_data_filename)
 
-        return self._pose_data[scene_name]
-
+        if type:
+            return self._pose_data[scene_name][type]
+        else:
+            return self._pose_data[scene_name]
 
     def get_pose_from_scene_name_and_idx(self, scene_name, idx):
         """
@@ -298,18 +297,23 @@ class SpartanDataset(DenseCorrespondenceDataset):
         """
         idx = int(idx)
         scene_pose_data = self.get_pose_data(scene_name)
-        pose_data = scene_pose_data[idx]['camera_to_world']
+        try:
+            pose_data = scene_pose_data[MechSearchDataType.TARGET][idx]['camera_to_world']
+        except:
+            pose_data = scene_pose_data[MechSearchDataType.HEAP][idx]['camera_to_world']
         return utils.homogenous_transform_from_dict(pose_data)
 
 
-    def get_image_filename(self, scene_name, img_index, image_type):
+    def get_image_filename(self, scene_name, img_index, image_type, obj_id=None):
         """
         Get the image filename for that scene and image index
         :param scene_name: str
         :param img_index: str or int
         :param image_type: ImageType
+        :paran obj_id: obj_id if this is a heap object
         :return:
         """
+        obj_id_optional = ""
 
         # @todo(manuelli) check that scene_name actually exists
 
@@ -324,6 +328,8 @@ class SpartanDataset(DenseCorrespondenceDataset):
         elif image_type == ImageType.MASK:
             images_dir = os.path.join(scene_directory, 'image_masks')
             file_extension = "_mask.png"
+            if obj_id is not None:
+                obj_id_optional = "_" + utils.getPaddedString(obj_id, width=SpartanDataset.PADDED_STRING_WIDTH)
         else:
             raise ValueError("unsupported image type")
 
@@ -334,7 +340,7 @@ class SpartanDataset(DenseCorrespondenceDataset):
         if not os.path.isdir(scene_directory):
             raise ValueError("scene_name = %s doesn't exist" %(scene_name))
 
-        return os.path.join(images_dir, img_index + file_extension)
+        return os.path.join(images_dir, img_index + obj_id_optional + file_extension)
 
     def get_camera_intrinsics(self, scene_name=None):
         """
@@ -353,15 +359,16 @@ class SpartanDataset(DenseCorrespondenceDataset):
         camera_info_file = os.path.join(scene_directory, 'processed', 'images', 'camera_info.yaml')
         return CameraIntrinsics.from_yaml_file(camera_info_file)
 
-    def get_random_image_index(self, scene_name):
+    def get_random_image_index(self, scene_name, type=None):
         """
         Returns a random image index from a given scene
         :param scene_name:
         :type scene_name:
+        :type type: MechSearchDataType
         :return:
         :rtype:
         """
-        pose_data = self.get_pose_data(scene_name)
+        pose_data = self.get_pose_data(scene_name, type)
         image_idxs = pose_data.keys() # list of integers
         random.choice(image_idxs)
         random_idx = random.choice(image_idxs)
@@ -572,13 +579,18 @@ class SpartanDataset(DenseCorrespondenceDataset):
 
         SD = SpartanDataset
 
-        image_a_idx = self.get_random_image_index(scene_name)
+        image_a_idx = self.get_random_image_index(scene_name, type=MechSearchDataType.TARGET)
+        # image_a_idx = 10
         image_a_rgb, image_a_depth, image_a_mask, image_a_pose = self.get_rgbd_mask_pose(scene_name, image_a_idx)
-
+        image_a_obj_id = self.get_pose_data(scene_name, type=MechSearchDataType.TARGET)[image_a_idx]['obj_id']
         metadata['image_a_idx'] = image_a_idx
 
         # image b
-        image_b_idx = self.get_img_idx_with_different_pose(scene_name, image_a_pose, num_attempts=50)
+        # !! Might need to modify this to select one with a similar pose or something
+        image_b_idx = self.get_random_image_index(scene_name, type=MechSearchDataType.HEAP)
+        # image_b_idx = 4
+        # image_b_idx = self.get_img_idx_with_different_pose(scene_name, image_a_pose, num_attempts=50)
+
         metadata['image_b_idx'] = image_b_idx
         if image_b_idx is None:
             logging.info("no frame with sufficiently different pose found, returning")
@@ -586,7 +598,7 @@ class SpartanDataset(DenseCorrespondenceDataset):
             image_a_rgb_tensor = self.rgb_image_to_tensor(image_a_rgb)
             return self.return_empty_data(image_a_rgb_tensor, image_a_rgb_tensor)
 
-        image_b_rgb, image_b_depth, image_b_mask, image_b_pose = self.get_rgbd_mask_pose(scene_name, image_b_idx)
+        image_b_rgb, image_b_depth, image_b_mask, image_b_pose = self.get_rgbd_mask_pose(scene_name, image_b_idx, image_a_obj_id)
 
         image_a_depth_numpy = np.asarray(image_a_depth)
         image_b_depth_numpy = np.asarray(image_b_depth)
@@ -601,6 +613,14 @@ class SpartanDataset(DenseCorrespondenceDataset):
                                                                             image_b_depth_numpy, image_b_pose,
                                                                             img_a_mask=correspondence_mask,
                                                                             num_attempts=self.num_matching_attempts)
+
+        # if self.debug:
+        #     # !!
+        #     # print(uv_a)
+        #     # print(uv_b)
+        #     uv_a = (uv_a[0][:1], uv_a[1][:1])
+        #     uv_b = (uv_b[0][:1], uv_b[1][:1])
+
 
         if for_synthetic_multi_object:
             return image_a_rgb, image_b_rgb, image_a_depth, image_b_depth, image_a_mask, image_b_mask, uv_a, uv_b
